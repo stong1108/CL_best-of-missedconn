@@ -5,6 +5,7 @@ from time import sleep
 import numpy as np
 from unidecode import unidecode
 from datetime import datetime
+import re
 
 class BestOfMC(object):
     '''
@@ -51,7 +52,7 @@ class BestOfMC(object):
             if soup.find('div', {'class': 'removed'}): # Skip "removed" posts
                 continue
             self._get_info(url)
-            sleep(5 + 3*np.random.random()) # Avoid getting kicked off server
+            sleep(1 + 3*np.random.random()) # Avoid getting kicked off server
 
     def _get_info(self, url):
         soup = self._look_at_page(url)
@@ -67,6 +68,8 @@ class BestOfMC(object):
             'loc': location, 'url': url, 'record_dt': self.record_dt, 'city': city,
             'raw_page': raw_page, 'has_pic': has_pic}
 
+        if post.startswith('<img'): #don't append posts that only contain images
+            return
         self.df = self.df.append(d, ignore_index=True)
 
     def _get_title_and_cat(self, soup):
@@ -77,7 +80,7 @@ class BestOfMC(object):
             title = ' '.join(temp[:-1])
         else:
             category = None
-            title = unidecode(soup.title.string)
+            title = unidecode(soup.title.string[20:])
         return title, category
 
     def _get_datetime(self, soup):
@@ -96,12 +99,24 @@ class BestOfMC(object):
             if '<li>' in str_item:
                 if 'Location: ' in unidecode(item.li.text):
                     # len(' Location: ') = 11
-                    location = unidecode(item.li.text)[11:]
-                continue
+                    if '\n' in unidecode(item.li.text):
+                        end_ind = unidecode(item.li.text).index('\n')
+                        loc_text = unidecode(item.li.text)[11:end_ind]
+                    else:
+                        loc_text = unidecode(item.li.text)[11:]
+                    location = loc_text.replace('\r', '')
             str_item = str_item.replace('<br>', ' ', 100)
             str_item = str_item.replace('</br>', ' ', 100)
             text.extend(str_item.strip().split())
         post = ' '.join(text)
+
+        if re.search('<[a-z][a-z]>', post) is not None:
+            end_ind = re.search('<[a-z][a-z]>', post).start()
+            post = post[:end_ind]
+
+        if '<!-- START CLTAGS -->' in post:
+            end_ind = post.index('<!-- START CLTAGS -->')
+            return post[:end_ind], location
         return post, location
 
     def _get_hrefs_and_cities(self, soup):
