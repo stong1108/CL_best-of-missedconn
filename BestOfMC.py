@@ -6,7 +6,6 @@ import numpy as np
 from unidecode import unidecode
 from datetime import datetime
 from HTMLParser import HTMLParser
-import htmlentitydefs
 import re
 
 class BestOfMC(object):
@@ -107,12 +106,18 @@ class BestOfMC(object):
                     else:
                         loc_text = unidecode(item.li.text)[11:]
                     location = loc_text.replace('\r', '')
-            if '<!-- START CLTAGS -->' in str_item:
-                end_ind = str_item.index('<!-- START CLTAGS -->')
-                str_item = str_item[:end_ind]
             str_item = html_to_text(str_item)
             text.extend(str_item.strip().split())
         post = ' '.join(text)
+        phrase = " it's NOT ok to contact this poster with services or other commercial interests"
+        post.replace(phrase, '')
+        post.replace('[?]', '', 200) # gets rid of emoji placeholders
+        if ' Location: ' in post:
+            end_ind = post.index(' Location: ')
+            post = post[:end_ind]
+        if ' <!-- ' in post:
+            end_ind = post.index(' <!-- ')
+            post = post[:end_ind]
 
         return post, location
 
