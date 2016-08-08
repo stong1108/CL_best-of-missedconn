@@ -110,7 +110,9 @@ class BestOfMC(object):
             text.extend(str_item.strip().split())
         post = ' '.join(text)
         phrase = " it's NOT ok to contact this poster with services or other commercial interests"
+        phrase2 = " Other ways to contact poster"
         post.replace(phrase, '')
+        post.replace(phrase2, '')
         post.replace('[?]', '', 200) # gets rid of emoji placeholders
         if ' Location: ' in post:
             end_ind = post.index(' Location: ')
