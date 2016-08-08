@@ -109,17 +109,16 @@ class BestOfMC(object):
             str_item = html_to_text(str_item)
             text.extend(str_item.strip().split())
         post = ' '.join(text)
-        phrase = " it's NOT ok to contact this poster with services or other commercial interests"
-        phrase2 = " Other ways to contact poster"
-        post.replace(phrase, '')
-        post.replace(phrase2, '')
+        phrases = [" it's NOT ok to contact this poster with services or other commercial interests",
+            " It\'s NOT ok to contact this poster with services or other commercial interests"]
+        for phrase in phrases:
+            post.replace(phrase, '')
         post.replace('[?]', '', 200) # gets rid of emoji placeholders
-        if ' Location: ' in post:
-            end_ind = post.index(' Location: ')
-            post = post[:end_ind]
-        if ' <!-- ' in post:
-            end_ind = post.index(' <!-- ')
-            post = post[:end_ind]
+        phrases2 = [' Location:', ' <!--', ' Other ways to contact poster', ' START CLTAGS']
+        for phrase in phrases2:
+            if phrase in post:
+                end_ind = post.index(phrase)
+                post = post[:end_ind]
 
         return post, location
 
